@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What to Wear Today</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>What to Wear Today?</h1>
+        <input type="text" id="city" placeholder="Enter city name">
+        <button id="getWeather">Get Weather</button>
+        <div id="weatherInfo">
+            <p id="temperature"></p>
+            <p id="description"></p>
+            <p id="outfitSuggestion"></p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f4f8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    text-align: center;
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+input {
+    width: 70%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+button {
+    padding: 10px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+#weatherInfo {
+    margin-top: 20px;
+}
+
+#outfitSuggestion {
+    font-weight: bold;
+    margin-top: 10px;
+}
+const apiKey = 'your_openweathermap_api_key'; // Replace with your OpenWeatherMap API key
+
+// Function to fetch weather data and display outfit suggestions
+async function getWeatherData() {
+    const city = document.getElementById('city').value;
+    if (!city) {
+        alert('Please enter a city name');
+        return;
+    }
+
+    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+
+    try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        if (data.cod !== 200) {
+            alert('City not found');
+            return;
+        }
+
+        const temperature = data.main.temp;
+        const description = data.weather[0].description;
+        const outfit = suggestOutfit(temperature, description);
+
+        document.getElementById('temperature').textContent = `Temperature: ${temperature}°C`;
+        document.getElementById('description').textContent = `Weather: ${description}`;
+        document.getElementById('outfitSuggestion').textContent = `Suggested Outfit: ${outfit}`;
+    } catch (error) {
+        console.error('Error fetching weather data:', error);
+    }
+}
+
+// Function to suggest outfit based on temperature and description
+function suggestOutfit(temperature, description) {
+    if (temperature < 10) {
+        return 'Wear a warm coat, scarf, and gloves';
+    } else if (temperature >= 10 && temperature < 20) {
+        return 'A jacket or sweater should be fine';
+    } else if (temperature >= 20 && temperature < 30) {
+        return 'Wear light clothing, like a t-shirt or blouse';
+    } else {
+        return 'It\'s hot! Wear shorts and a tank top';
+    }
+}
+
+// Event listener for the button click
+document.getElementById('getWeather').addEventListener('click', getWeatherData);
