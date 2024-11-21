@@ -1,0 +1,77 @@
+import requests
+from datetime import datetime
+
+# Replace with your GitHub token and repository details
+GITHUB_TOKEN = 'your_github_token'
+OWNER = 'repository_owner'
+REPO = 'repository_name'
+
+# Headers for GitHub API requests
+headers = {
+    'Authorization': f'token {GITHUB_TOKEN}'
+}
+
+# Function to fetch pull requests from the GitHub repository
+def get_pull_requests(owner, repo):
+    url = f'https://api.github.com/repos/{owner}/{repo}/pulls'
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Failed to fetch pull requests: {response.status_code}")
+        return []
+
+# Function to evaluate PR based on different criteria
+def evaluate_pr(pr):
+    # Example criteria:
+    # 1. Most recent PR
+    # 2. PR with the "priority" label
+    # 3. PR with the most comments (active discussion)
+    
+    created_at = pr['created_at']
+    updated_at = pr['updated_at']
+    labels = [label['name'] for label in pr['labels']]
+    comments = pr['comments']
+
+    # Parse the dates
+    created_date = datetime.fromisoformat(created_at[:-1])  # Remove the trailing 'Z'
+    updated_date = datetime.fromisoformat(updated_at[:-1])
+
+    # Define criteria
+    priority_label = 'priority'
+    is_priority = priority_label in labels
+    time_since_update = (datetime.now() - updated_date).days
+    recent = time_since_update <= 7  # If PR was updated within the last 7 days
+
+    return {
+        'pr': pr,
+        'created_at': created_date,
+        'updated_at': updated_date,
+        'is_priority': is_priority,
+        'recent': recent,
+        'comments': comments
+    }
+
+# Function to decide which PR to merge
+def choose_pr_to_merge(prs):
+    evaluated_prs = [evaluate_pr(pr) for pr in prs]
+
+    # Sort by priority (priority label), then by recent activity, and comments
+    sorted_prs = sorted(evaluated_prs, key=lambda x: (not x['is_priority'], not x['recent'], -x['comments']))
+
+    # Select the highest priority, recent, and active PR
+    best_pr = sorted_prs[0]['pr']
+    print(f"Suggested PR to merge: #{best_pr['number']} - {best_pr['title']}")
+    print(f"Created at: {sorted_prs[0]['created_at']}")
+    print(f"Updated at: {sorted_prs[0]['updated_at']}")
+    print(f"Labels: {', '.join([label['name'] for label in best_pr['labels']])}")
+    print(f"Number of comments: {best_pr['comments']}")
+
+# Main function to run the decision-making process
+def main():
+    prs = get_pull_requests(OWNER, REPO)
+    if prs:
+        choose_pr_to_merge(prs)
+
+if __name__ == '__main__':
+    main()
