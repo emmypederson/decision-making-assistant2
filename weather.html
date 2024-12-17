@@ -1,79 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>What to Wear Today</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="container">
-        <h1>What to Wear Today?</h1>
-        <input type="text" id="city" placeholder="Enter city name">
-        <button id="getWeather">Get Weather</button>
-        <div id="weatherInfo">
-            <p id="temperature"></p>
-            <p id="description"></p>
-            <p id="outfitSuggestion"></p>
-        </div>
-    </div>
-
-    <script src="app.js"></script>
-</body>
-</html>
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f4f8;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-}
-
-.container {
-    text-align: center;
-    background-color: #ffffff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    width: 300px;
-}
-
-h1 {
-    font-size: 24px;
-    margin-bottom: 20px;
-}
-
-input {
-    width: 70%;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-}
-
-button {
-    padding: 10px 15px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #45a049;
-}
-
-#weatherInfo {
-    margin-top: 20px;
-}
-
-#outfitSuggestion {
-    font-weight: bold;
-    margin-top: 10px;
-}
 const apiKey = 'your_openweathermap_api_key'; // Replace with your OpenWeatherMap API key
 
 // Function to fetch weather data and display outfit suggestions
@@ -96,7 +20,7 @@ async function getWeatherData() {
         }
 
         const temperature = data.main.temp;
-        const description = data.weather[0].description;
+        const description = data.weather[0].description.toLowerCase();
         const outfit = suggestOutfit(temperature, description);
 
         document.getElementById('temperature').textContent = `Temperature: ${temperature}°C`;
@@ -109,14 +33,41 @@ async function getWeatherData() {
 
 // Function to suggest outfit based on temperature and description
 function suggestOutfit(temperature, description) {
+    // Cold weather below 10°C
     if (temperature < 10) {
-        return 'Wear a warm coat, scarf, and gloves';
-    } else if (temperature >= 10 && temperature < 20) {
-        return 'A jacket or sweater should be fine';
-    } else if (temperature >= 20 && temperature < 30) {
-        return 'Wear light clothing, like a t-shirt or blouse';
-    } else {
-        return 'It\'s hot! Wear shorts and a tank top';
+        if (description.includes('snow') || description.includes('rain')) {
+            return 'Wear a warm coat, scarf, gloves, and waterproof boots';
+        } else {
+            return 'Wear a heavy coat, scarf, gloves, and warm layers';
+        }
+    }
+    // Cool weather between 10°C and 20°C
+    else if (temperature >= 10 && temperature < 20) {
+        if (description.includes('rain')) {
+            return 'Wear a rain jacket, boots, and an umbrella';
+        } else if (description.includes('wind')) {
+            return 'Wear a windbreaker, layered clothing, and comfortable shoes';
+        } else {
+            return 'A jacket or sweater should be fine';
+        }
+    }
+    // Warm weather between 20°C and 30°C
+    else if (temperature >= 20 && temperature < 30) {
+        if (description.includes('rain')) {
+            return 'Wear a light jacket, t-shirt, and carry an umbrella';
+        } else if (description.includes('wind')) {
+            return 'Wear a light jacket or sweater, comfortable pants or skirt';
+        } else {
+            return 'Wear light clothing, like a t-shirt or blouse';
+        }
+    }
+    // Hot weather above 30°C
+    else {
+        if (description.includes('rain')) {
+            return 'Wear a tank top, shorts, and carry an umbrella';
+        } else {
+            return 'It\'s hot! Wear shorts, a tank top, and sunglasses';
+        }
     }
 }
 
